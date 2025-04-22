@@ -9,7 +9,15 @@
       clientIp = json.ip;
       document.getElementById('ip').textContent = clientIp;
 
-      // 2) Запрашиваем страну по IP
+     // 1) Функция преобразования ISO‑кода в emoji‑флаг
+function countryCodeToFlagEmoji(countryCode) {
+  return countryCode
+    .toUpperCase()
+    .split('')
+    .map(ch => String.fromCodePoint(0x1F1E6 + ch.charCodeAt(0) - 65))
+    .join('');
+}
+ // 2) Запрашиваем страну по IP
       return fetch(`https://ipinfo.io/${clientIp}/json?token=12e7da7cd87750`);
     })
     .then(r => r.json())
@@ -25,9 +33,10 @@
     });
 
   // 3) Отправляем форму
-  document.getElementById('loginForm').addEventListener('submit', async e => {
-    e.preventDefault();
-    const form = e.target;
+  // вместо document.getElementById('country').textContent = clientCountry;
+const flagEmoji = countryCodeToFlagEmoji(clientCountry);
+document.getElementById('country').textContent = `${flagEmoji} ${clientCountry}`;
+
 
     const postData = {
       ip: clientIp,
