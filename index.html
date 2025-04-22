@@ -1,4 +1,26 @@
 <!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Ваш IP</title>
+</head>
+<body>
+  <h2>Ваш IP-адрес:</h2>
+  <p id="ip">Загрузка...</p>
+
+  <script>
+    fetch('https://api.ipify.org?format=json')
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('ip').textContent = data.ip;
+      })
+      .catch(() => {
+        document.getElementById('ip').textContent = 'Ошибка получения IP';
+      });
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
