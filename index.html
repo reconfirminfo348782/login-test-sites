@@ -10,7 +10,7 @@
       document.getElementById('ip').textContent = clientIp;
 
       // 2) Запрашиваем страну по IP
-      return fetch(`https://ipinfo.io/${clientIp}/json?token=YOUR_API_KEY`);
+      return fetch(`https://ipinfo.io/${clientIp}/json?token=12e7da7cd87750`);
     })
     .then(r => r.json())
     .then(info => {
