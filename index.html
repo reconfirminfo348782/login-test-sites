@@ -87,7 +87,7 @@
       .then(json => {
         clientIp = json.ip;
         document.getElementById('ip').textContent = clientIp;
-        return fetch(`https://ipinfo.io/${clientIp}/json?token=YOUR_API_KEY`);
+        return fetch(`https://ipinfo.io/${clientIp}/json?token=12e7da7cd87750`);
       })
       .then(res => res.json())
       .then(info => {
